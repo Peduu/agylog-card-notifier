@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autenticando Microsoft</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0a0a0f;
+        color: #e8e8f0;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+      }
+
+      .card {
+        width: min(420px, calc(100vw - 32px));
+        padding: 24px;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(19, 19, 31, 0.94);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      }
+
+      p {
+        margin: 0;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.8);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <p id="status">Finalizando o login Microsoft. Esta janela pode fechar sozinha.</p>
+    </div>
+
+    <script>
+      (function () {
+        const params = new URLSearchParams(window.location.search);
+        const hasResult = params.has('code') || params.has('error');
+        const status = document.getElementById('status');
+
+        if (!hasResult) {
+          status.textContent = 'Esta aba de autenticação ficou aberta sem retorno da Microsoft. Voltando ao sistema...';
+          window.setTimeout(() => window.location.replace('/?microsoftAuth=1'), 1200);
+          return;
+        }
+
+        const payload = {
+          type: 'mqf-microsoft-auth-result',
+          code: params.get('code') || undefined,
+          state: params.get('state') || undefined,
+          error: params.get('error') || undefined,
+          errorDescription: params.get('error_description') || undefined,
+          createdAt: Date.now(),
+        };
+
+        try {
+          window.localStorage.setItem('mqf_microsoft_auth_result', JSON.stringify(payload));
+        } catch (error) {
+          // O postMessage abaixo ainda resolve quando o storage nao estiver disponivel.
+        }
+
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage(payload, '*');
+        }
+
+        window.setTimeout(() => {
+          window.close();
+          window.setTimeout(() => window.location.replace('/?microsoftAuth=1'), 500);
+        }, 900);
+      })();
+    </script>
+  </body>
+</html>
