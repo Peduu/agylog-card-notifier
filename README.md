@@ -38,7 +38,7 @@ Sistema que automatiza a geração de comunicados formais: o operador seleciona 
 
 ## Screenshots
 
-![Card Notifier — Comunicados de Ocorrência](screenshots/card-notifier.jpg)
+
 
 ---
 
